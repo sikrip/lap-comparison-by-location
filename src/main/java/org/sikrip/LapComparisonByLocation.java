@@ -34,31 +34,56 @@ public class LapComparisonByLocation {
 
         // === Match Lap B to closest point in Lap A ===
         final double[] speedBClosest = mapLapBToLapAByLocation(
-            xyA[0], xyA[1], xyB[0], xyB[1], lapB.speed);
+            xyA[0], xyA[1], xyB[0], xyB[1], lapB.speed
+        );
 
-        // === Use Lap A sample index as x-axis ===
-        final double[] indexA = new double[lapA.lat.length];
-        for (int i = 0; i < indexA.length; i++) {
+        // === Index axis ===
+        final int n = lapA.lat.length;
+        final double[] indexA = new double[n];
+        for (int i = 0; i < n; i++) {
             indexA[i] = i;
         }
 
-        // === Plot ===
-        final XYChart chart = new XYChartBuilder()
-            .width(800).height(500)
-            .title("Lap Comparison by Location")
+        // === Compute cumulative distance ===
+        final double[] distanceA = computeCumulativeDistance(xyA[0], xyA[1]);
+        final double[] distanceB = computeCumulativeDistance(xyB[0], xyB[1]);
+
+        // === Chart 1: Speed comparison ===
+        final XYChart speedChart = new XYChartBuilder()
+            .width(800).height(400)
+            .title("Lap Speed Comparison")
             .xAxisTitle("Sample Index")
             .yAxisTitle("Speed (m/s)")
             .build();
 
-        chart.getStyler().setMarkerSize(4);
-
-        chart.addSeries("Lap A", indexA, lapA.speed).setMarker(new None());
-        chart.addSeries("Lap B (closest)", indexA, speedBClosest)
+        speedChart.getStyler().setMarkerSize(4);
+        speedChart.addSeries("Lap A", indexA, lapA.speed).setMarker(new None());
+        speedChart.addSeries("Lap B (closest)", indexA, speedBClosest)
             .setXYSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Line)
             .setMarker(new None());
 
-        new SwingWrapper<>(chart).displayChart();
+        // === Chart 2: Cumulative Distance ===
+        final XYChart distChart = new XYChartBuilder()
+            .width(800).height(400)
+            .title("Cumulative Distance")
+            .xAxisTitle("Sample Index")
+            .yAxisTitle("Distance (m)")
+            .build();
+
+        distChart.getStyler().setMarkerSize(4);
+        distChart.addSeries("Lap A", indexA, distanceA).setMarker(new None());
+        distChart.addSeries("Lap B", new double[distanceB.length], distanceB)  // indexB
+            .setXYSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Line)
+            .setMarker(new None());
+
+        for (int i = 0; i < distanceB.length; i++) {
+            distChart.getSeriesMap().get("Lap B").getXData()[i] = i;
+        }
+
+        // === Display both charts in tabs ===
+        new SwingWrapper<>(List.of(speedChart, distChart)).displayChartMatrix();
     }
+
 
     /**
      * Reads latitude, longitude, and speed data from a CSV file just for this sample/demo.
@@ -148,6 +173,20 @@ public class LapComparisonByLocation {
         }
         return result;
     }
+
+    private static double[] computeCumulativeDistance(double[] x, double[] y) {
+        int n = x.length;
+        double[] dist = new double[n];
+        dist[0] = 0.0;
+
+        for (int i = 1; i < n; i++) {
+            double dx = x[i] - x[i - 1];
+            double dy = y[i] - y[i - 1];
+            dist[i] = dist[i - 1] + Math.sqrt(dx * dx + dy * dy);
+        }
+        return dist;
+    }
+
 
     /**
      * Data structure to hold latitude, longitude, and speed arrays for a lap.
