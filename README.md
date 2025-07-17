@@ -20,7 +20,7 @@ src/
 ```
 
 ## 📄 CSV Format
-Both `1m34.344s.csv` and `1m53.819s.csv` must include a header row and three columns: `lat,lon,speed`.
+Both sample laps (`1m34.344s.csv` and `1m53.819s.csv`) include a header row and three columns: `lat,lon,speed` and this is the expected format if you need to try other data files.
 
 Example:
 ```csv
