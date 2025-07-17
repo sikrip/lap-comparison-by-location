@@ -38,3 +38,4 @@ lat,lon,speed
 1. Clone or download the project 
 2. Make sure you have Maven installed 
 3. Open a terminal and run: `mvn compile exec:java -Dexec.mainClass=LapComparisonByLocation`
+4. Sample output ![img.png](img.png)
