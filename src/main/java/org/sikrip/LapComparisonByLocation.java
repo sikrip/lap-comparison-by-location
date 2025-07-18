@@ -152,27 +152,39 @@ public class LapComparisonByLocation {
         double[] xB, double[] yB,
         double[] speedB
     ) {
+        final int SEARCH_WINDOW = 50; // tune as needed
         final double[] result = new double[xA.length];
 
-        for (int i = 0; i < xA.length; i++) {
-            double minDist = Double.MAX_VALUE;
-            int minIndex = -1;
+        int lastMatchedIndex = 0;
 
-            for (int j = 0; j < xB.length; j++) {
-                double dx = xA[i] - xB[j];
-                double dy = yA[i] - yB[j];
+        for (int i = 0; i < xA.length; i++) {
+            double x = xA[i];
+            double y = yA[i];
+
+            double minDist = Double.MAX_VALUE;
+            int bestBIdx = -1;
+
+            int left = Math.max(0, lastMatchedIndex - SEARCH_WINDOW);
+            int right = Math.min(xB.length, lastMatchedIndex + SEARCH_WINDOW);
+
+            for (int j = left; j < right; j++) {
+                double dx = x - xB[j];
+                double dy = y - yB[j];
                 double dist = dx * dx + dy * dy;
 
                 if (dist < minDist) {
                     minDist = dist;
-                    minIndex = j;
+                    bestBIdx = j;
+                    lastMatchedIndex = j;
                 }
             }
 
-            result[i] = speedB[minIndex];
+            result[i] = speedB[bestBIdx];
         }
+
         return result;
     }
+
 
     private static double[] computeCumulativeDistance(double[] x, double[] y) {
         int n = x.length;
